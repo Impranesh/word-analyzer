@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Frequency Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css"> <!-- Optional for styling -->
+    <script>
+        async function analyzeWords() {
+            const url = document.getElementById('url').value;
+            const topN = document.getElementById('top_n').value;
+
+            if (!url || !topN) {
+                alert("Please enter both URL and the number of top words.");
+                return;
+            }
+
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    url: url,
+                    top_n: parseInt(topN)
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const resultTable = document.getElementById('results');
+                resultTable.innerHTML = '';
+
+                data.top_words.forEach((item) => {
+                    const row = resultTable.insertRow();
+                    const wordCell = row.insertCell(0);
+                    const freqCell = row.insertCell(1);
+
+                    wordCell.textContent = item[0];
+                    freqCell.textContent = item[1];
+                });
+            } else {
+                alert(data.error || "An error occurred while analyzing the URL.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Word Frequency Analyzer</h1>
+    <form onsubmit="event.preventDefault(); analyzeWords();">
+        <label for="url">Website URL:</label>
+        <input type="text" id="url" name="url" required>
+        <br>
+        <label for="top_n">Top N Words:</label>
+        <input type="number" id="top_n" name="top_n" value="10" min="1" required>
+        <br>
+        <button type="submit">Analyze</button>
+    </form>
+
+    <h2>Word Frequency Results</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Word</th>
+                <th>Frequency</th>
+            </tr>
+        </thead>
+        <tbody id="results">
+            <!-- Results will be populated here -->
+        </tbody>
+    </table>
+</body>
+</html>
